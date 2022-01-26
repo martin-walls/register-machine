@@ -1,0 +1,6 @@
+(0, 2, 3)
+SUB r1, 1, 2
+ADD r0, 0
+SUB r2, 3, 4
+ADD r0, 2
+HALT
