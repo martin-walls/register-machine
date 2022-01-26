@@ -2,7 +2,7 @@
 
 ## Source files
 
-The first line specifies the **initial configuration** of the program:
+The first line specifies the initial configuration of the program:
 
 `(l, r0, r1, ..., rn)`
 
@@ -14,7 +14,7 @@ Subsequent lines specify the program instructions. Each line is of the form `l: 
 - `l` is the label of that instruction (a natural number)
 - `<body>` is one of the three instruction types below
 
-body | instruction
+Body | Instruction
 -----|------------
 `ADD r, l` | Add 1 to the contents of register `r`, and jump to instruction labelled `l`
 `SUB r, l1, l2` | If register `r` > 0, subtract 1 from the contents of register `r` and jump to instruction `l1`; else do nothing and jump to instruction `l2`
@@ -30,4 +30,4 @@ To clean up, run `make clean`.
 
 ## Usage
 
-Usage: `machine.byte <file>`
+Usage: `machine.native <file>`
