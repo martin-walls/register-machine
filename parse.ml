@@ -1,10 +1,7 @@
 open Instructions
 
 (* initial config * instruction sequence *)
-type program = int array * instr list
-
-let initial_config_pattern = Str.regexp "^ *( *\\(\\([0-9]+, *\\)*[0-9]+\\) *)"
-let int_pattern = Str.regexp "\\([0-9]+\\)"
+type program = int * int array * instr list
 
 let rec print_split ss =
   match ss with
@@ -12,14 +9,16 @@ let rec print_split ss =
   | s::ss -> Printf.printf "%d " s;
              print_split ss
 
-
 let parse_initial_config line =
   let s = Str.string_match initial_config_pattern line 0 in
   if s then
     let rs_string = Str.matched_group 1 line in
     let split = Str.split (Str.regexp ", *") rs_string in
     let rs = List.map (fun s -> int_of_string s) split in
-    Array.of_list rs
+    match rs with
+    | [] -> (0,[||])
+    | [l] -> (l, [||])
+    | l::rs -> (l, Array.of_list rs)
   else begin
     Printf.printf "Invalid initial config: %s\n" line;
     exit 0
@@ -29,20 +28,23 @@ let parse_line line =
   (* Printf.printf "parsing line %s\n" line; *)
   let s = Str.string_match add_pattern line 0 in
   if s then
-    let reg = int_of_string (Str.matched_group 3 line) in
-    let dst = int_of_string (Str.matched_group 5 line) in
-    Add (reg, dst)
+      let i = int_of_string (Str.matched_group 1 line) in
+    let reg = int_of_string (Str.matched_group 4 line) in
+    let dst = int_of_string (Str.matched_group 6 line) in
+    Instr (i, Add (reg, dst))
   else
     let s = Str.string_match sub_pattern line 0 in
     if s then
-      let reg = int_of_string (Str.matched_group 3 line) in
-      let dst1 = int_of_string (Str.matched_group 5 line) in
-      let dst2 = int_of_string (Str.matched_group 7 line) in
-      Sub (reg, dst1, dst2)
+      let i = int_of_string (Str.matched_group 1 line) in
+      let reg = int_of_string (Str.matched_group 4 line) in
+      let dst1 = int_of_string (Str.matched_group 6 line) in
+      let dst2 = int_of_string (Str.matched_group 8 line) in
+      Instr (i, Sub (reg, dst1, dst2))
     else
       let s = Str.string_match halt_pattern line 0 in
       if s then
-        Halt
+        let i = int_of_string (Str.matched_group 1 line) in
+        Instr (i, Halt)
       else
         Nop
 
@@ -58,10 +60,10 @@ let parse file =
   let ic = open_in file in
   let instrs = [] in
   try
-    let rs = parse_initial_config (input_line ic) in
+    let l,rs = parse_initial_config (input_line ic) in
     let is = List.rev (parse_lines ic instrs) in
     close_in ic;
-    (rs, is)
+    (l, rs, is)
   with e ->
     Printf.printf "Error reading source file.";
     close_in_noerr ic;

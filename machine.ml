@@ -1,29 +1,8 @@
 open Instructions
 
-(* represent register contents as a list of integers *)
-(* let rec get_reg regs x = *)
-(*   if x < 0 then 0 *)
-(*   else *)
-(*   match regs with *)
-(*   | [] -> 0 *)
-(*   | r::rs -> *)
-(*       if x == 0 then *)
-(*         r *)
-(*       else *)
-(*         get_reg (x-1) rs *)
-
-(* let rec set_reg regs x v = *)
-(*   if x < 0 then regs *)
-(*   else *)
-(*     match regs with *)
-(*     | [] -> regs *)
-(*     | r::rs -> *)
-(*         if x == 0 then *)
-(*           v::rs *)
-(*         else *)
-(*           r :: (set_reg rs (x-1) v) *)
-
-let print_regs regs =
+let print_config l regs =
+  Printf.printf "(";
+  Printf.printf "l=%d, " l;
   let rec aux i len =
     if i < len then begin
       Printf.printf "r%d=%d" i regs.(i);
@@ -33,7 +12,6 @@ let print_regs regs =
     end
     else ()
   in
-  Printf.printf "(";
   aux 0 (Array.length regs);
   Printf.printf ")\n"
 
@@ -42,10 +20,11 @@ let rec get_instr instrs n =
   else
   match instrs with
   | [] -> Halt
-  | i::is ->
-      if n == 0 then i
+  | Instr(i,bdy)::is ->
+      if n == i then bdy
       else
-        get_instr is (n-1)
+        get_instr is n
+  | Nop::is -> get_instr is n
 
 (* regs is an array of integers, the register contents *)
 (* l is the current instruction label, an int *)
@@ -63,12 +42,11 @@ let run_instr i regs l =
         l := l2
   | Halt ->
       Printf.printf "Final config:\t";
-      print_regs regs;
+      print_config !l regs;
       exit 0
-  | Nop -> ()
 
-let run rs instrs =
-  let l = ref 0 in
+let run l rs instrs =
+  let l = ref l in
   let rec next_instr () =
     let i = get_instr instrs !l in
     run_instr i rs l;
@@ -76,13 +54,17 @@ let run rs instrs =
   in
   next_instr ()
 
-(* let () = Util.print_instr_list (Parse.parse "test.reg") *)
-
 let run_file file =
-  let (rs,is) = Parse.parse file in
+  let (l,rs,is) = Parse.parse file in
   Printf.printf "Initial config:\t";
-  print_regs rs;
-  run rs is
+  print_config l rs;
+  run l rs is
 
-let () =
-  run_file "test.reg"
+let main () =
+  let argv = Array.to_list Sys.argv in
+  let args = List.tl argv in
+  match args with
+  | [] -> Printf.printf "Usage: machine.byte <source file>"
+  | file::_ -> run_file file
+
+let () = main ()
