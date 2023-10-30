@@ -9,6 +9,8 @@ type instr_body = Add of int * int
 type instr = Instr of int * instr_body
            | Nop
 
+type reg = Reg of int * int
+
 (* regex matching for instructions *)
 let add_pattern = Str.regexp "^ *\\([0-9]+\\): *\\(ADD\\|add\\) +\\(r\\|R\\)?\\([0-9]+\\), *\\(l\\|L\\)?\\([0-9]+\\)"
 

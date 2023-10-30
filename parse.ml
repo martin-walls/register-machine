@@ -1,4 +1,5 @@
 open Instructions
+open Printf
 
 (* initial config * instruction sequence *)
 type program = int * int array * instr list
@@ -9,6 +10,14 @@ let rec print_split ss =
   | s::ss -> Printf.printf "%d " s;
              print_split ss
 
+let number_regs regs =
+  let rec aux rs i return_rs =
+    match rs with
+    | [] -> return_rs
+    | r::rs -> printf "%d\n" r; aux rs (i+1) (Reg(i,r)::return_rs)
+  in
+  aux regs 0 []
+
 let parse_initial_config line =
   let s = Str.string_match initial_config_pattern line 0 in
   if s then
@@ -16,9 +25,9 @@ let parse_initial_config line =
     let split = Str.split (Str.regexp ", *") rs_string in
     let rs = List.map (fun s -> int_of_string s) split in
     match rs with
-    | [] -> (0,[||])
-    | [l] -> (l, [||])
-    | l::rs -> (l, Array.of_list rs)
+    | [] -> (0,[])
+    | [l] -> (l, [])
+    | l::rs -> (l, number_regs rs)
   else begin
     Printf.printf "Invalid initial config: %s\n" line;
     exit 0
